@@ -2,15 +2,11 @@ class Node {
   constructor(value) {
     this.value = value;
     this.adjacents = new Map(); // adjacency list with weights
+    this.hiddenCard = null; // The type of card hidden in this node
   }
 
   addAdjacent(node, weight = 1) {
     this.adjacents.set(node, weight);
-    console.log(`Added adjacent: `, node);
-    console.log(
-      `Current Adjacency List: `,
-      Array.from(this.adjacents.keys()).map((n) => n.value)
-    );
   }
 
   removeAdjacent(node) {
@@ -38,6 +34,29 @@ class Node {
       .map((node) => node.value)
       .join(", ");
     return `Node(value: ${this.value}, adjacents: [${adjValues}])`;
+  }
+
+  logDetails() {
+    console.log(`Node value: ${this.value}`);
+    if (this.hiddenCard) {
+      console.log(`Hidden card: ${this.hiddenCard.type}`);
+    } else {
+      console.log("No hidden card.");
+    }
+    console.log("Adjacents:");
+    for (const [node, weight] of this.adjacents) {
+      console.log(`  Node value: ${node.value}, Weight: ${weight}`);
+    }
+  }
+
+  revealCard() {
+    if (this.hiddenCard) {
+      console.log(`Revealed a ${this.hiddenCard.type} card.`);
+      return this.hiddenCard;
+    } else {
+      console.log("No card hidden in this node.");
+      return null;
+    }
   }
 }
 

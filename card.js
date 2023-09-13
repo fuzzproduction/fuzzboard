@@ -7,12 +7,25 @@ class Card {
 class CardStack {
   constructor() {
     this.stack = [];
-    // Initialize stack with different types of cards
-    const cardTypes = ["Dragon", "Princess", "Goblin"];
-    cardTypes.forEach((type) => {
-      this.stack.push(new Card(type));
-    });
-    this.shuffle();
+    this.initStack();
+  }
+
+  initStack() {
+    const initialCardTypes = ["Dragon", "Goblin", "Princess"];
+    initialCardTypes.forEach((type) => this.addCard(type));
+  }
+
+  addCard(type) {
+    const card = new Card(type);
+    this.stack.push(card);
+  }
+
+  draw() {
+    if (this.isEmpty()) {
+      console.log("The card stack is empty.");
+      return null;
+    }
+    return this.stack.pop().type;
   }
 
   shuffle() {
@@ -22,13 +35,28 @@ class CardStack {
     }
   }
 
-  drawCard() {
-    return this.stack.pop();
-  }
-
   isEmpty() {
     return this.stack.length === 0;
   }
+
+  cardCount() {
+    return this.stack.length;
+  }
+
+  peek() {
+    if (this.isEmpty()) {
+      console.log("The card stack is empty.");
+      return null;
+    }
+    return this.stack[this.stack.length - 1].type;
+  }
+
+  peekRemainingCards() {
+    return this.stack.map((card) => card.type);
+  }
 }
 
-module.exports = CardStack;
+module.exports = {
+  Card,
+  CardStack,
+};

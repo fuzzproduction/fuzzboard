@@ -1,105 +1,108 @@
 const Node = require("./node");
-const Queue = require("./queue");
 
 class Graph {
+  static get UNDIRECTED() {
+    return Symbol("undirected");
+  }
+
+  static get DIRECTED() {
+    return Symbol("directed");
+  }
+
   constructor(edgeDirection = Graph.UNDIRECTED) {
     this.nodes = new Map();
     this.edgeDirection = edgeDirection;
   }
 
-  addVertex(value) {
-    // Create the node by adding it to the nodes map if it doesn't exist
-    if (this.nodes.has(value)) {
-      return this.nodes.get(value);
-    } else {
-      const vertex = new Node(value);
-      // Create the key/value pair and add it to the nodes map
-      this.nodes.set(value, vertex);
-      console.log(`Vertex added: ${value}`);
-      return vertex;
+  addNode(value) {
+    if (!this.nodes.has(value)) {
+      const newNode = new Node(value);
+      this.nodes.set(value, newNode);
     }
   }
 
-  removeVertex(value) {
-    const current = this.nodes.get(value);
-    // if the node is used in an adjacent node (edges) remove it
-    if (current) {
-      for (const node of this.nodes.values()) {
-        node.removeAdjacent(current);
+  removeNode(value) {
+    const node = this.nodes.get(value);
+    if (node) {
+      for (const adj of node.getAdjacents()) {
+        this.removeEdge(value, adj.value);
+      }
+      this.nodes.delete(value);
+    }
+  }
+
+  addEdge(sourceNodeValue, destinationNodeValue, weight = 1) {
+    const sourceNode = this.nodes.get(sourceNodeValue);
+    const destinationNode = this.nodes.get(destinationNodeValue);
+
+    if (sourceNode && destinationNode) {
+      sourceNode.addAdjacent(destinationNode, weight);
+      if (this.edgeDirection === Graph.UNDIRECTED) {
+        destinationNode.addAdjacent(sourceNode, weight);
       }
     }
-    return this.nodes.delete(value);
   }
 
-  addEdge(source, destination, weight = 1) {
-    const sourceNode = this.addVertex(source); // Fetch or create node
-    const destinationNode = this.addVertex(destination); // Fetch or create node
-
-    sourceNode.addAdjacent(destinationNode, weight);
-    console.log(
-      `Adding adjacent node with value: ${destination} and weight: ${weight}`
-    );
-
-    if (this.edgeDirection === Graph.UNDIRECTED) {
-      destinationNode.addAdjacent(sourceNode, weight);
-    }
-
-    console.log(
-      `Edge added between ${source} and ${destination} with weight ${weight}`
-    );
-    console.log(
-      `Current adjacency list for ${source}:`,
-      sourceNode.getAdjacents().map((n) => n.value)
-    );
-    console.log("SourceNode Instance:", sourceNode);
-    console.log("DestinationNode Instance:", destinationNode);
-    return [sourceNode, destinationNode];
-  }
-
-  removeEdge(source, destination) {
-    const sourceNode = this.nodes.get(source);
-    const destinationNode = this.nodes.get(destination);
+  removeEdge(sourceNodeValue, destinationNodeValue) {
+    const sourceNode = this.nodes.get(sourceNodeValue);
+    const destinationNode = this.nodes.get(destinationNodeValue);
 
     if (sourceNode && destinationNode) {
       sourceNode.removeAdjacent(destinationNode);
-
       if (this.edgeDirection === Graph.UNDIRECTED) {
         destinationNode.removeAdjacent(sourceNode);
       }
     }
-    return [sourceNode, destinationNode];
   }
 
-  *bfs(first) {
-    const visited = new Map();
-    const visitList = new Queue();
+  findNodesAtDistance(startNode, distance) {
+    const visited = new Set();
+    const queue = [{ node: startNode, distance: 0 }];
+    const nodesAtDistance = [];
 
-    visitList.add(first);
+    while (queue.length > 0) {
+      const { node, distance: currentDistance } = queue.shift();
+      visited.add(node);
 
-    while (!visitList.isEmpty()) {
-      const node = visitList.remove();
-      if (node && !visited.has(node)) {
-        yield node;
-        visited.set(node, true);
-        node.getAdjacents().forEach((adj) => visitList.add(adj));
+      if (currentDistance === distance) {
+        nodesAtDistance.push(node);
+      }
+
+      if (currentDistance < distance) {
+        for (const adj of node.getAdjacents()) {
+          if (!visited.has(adj)) {
+            queue.push({ node: adj, distance: currentDistance + 1 });
+          }
+        }
+      }
+    }
+
+    return nodesAtDistance;
+  }
+
+  distributeCards(cardTypes, specificNodes = null) {
+    if (specificNodes) {
+      for (const [nodeValue, cardType] of Object.entries(specificNodes)) {
+        const node = this.nodes.get(nodeValue);
+        if (node) {
+          node.hiddenCard = { type: cardType };
+        }
+      }
+    } else {
+      const nodeArray = Array.from(this.nodes.values());
+      for (const cardType of cardTypes) {
+        const randomIndex = Math.floor(Math.random() * nodeArray.length);
+        const node = nodeArray[randomIndex];
+        node.hiddenCard = { type: cardType };
       }
     }
   }
 
-  toString() {
-    let graphString = "";
-    for (const [key, node] of this.nodes) {
-      graphString += `Vertex: ${key}, Adjacent vertices: `;
-      node.getAdjacents().forEach((adj) => {
-        graphString += `${adj.value}, `;
-      });
-      graphString += "\n";
+  logDetails() {
+    for (const [_, node] of this.nodes) {
+      node.logDetails();
     }
-    return graphString;
   }
 }
-
-Graph.UNDIRECTED = Symbol("undirected graph"); // two-ways edges
-Graph.DIRECTED = Symbol("directed graph"); // one-way edges
 
 module.exports = Graph;
