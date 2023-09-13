@@ -1,7 +1,7 @@
-const Graph = require("./new_graph");
+const Graph = require("./graph");
 const Node = require("./node");
-const Player = require("./new_player");
-const { CardStack } = require("./new_card");
+const Player = require("./player");
+const { CardStack } = require("./card");
 
 const readline = require("readline");
 
