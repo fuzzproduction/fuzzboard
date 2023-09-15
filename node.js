@@ -50,9 +50,19 @@ class Node {
   }
 
   revealCard() {
+    // TOREMOVE
+    console.log(
+      `Before reveal, Node ${this.value} hidden card:`,
+      this.hiddenCard
+    );
     if (this.hiddenCard) {
       console.log(`Revealed a ${this.hiddenCard.type} card.`);
-      return this.hiddenCard;
+      this.hiddenCard = null; // Make sure to set it to null after revealing
+      console.log(
+        `After reveal, Node ${this.value} hidden card:`,
+        this.hiddenCard
+      );
+      return null;
     } else {
       console.log("No card hidden in this node.");
       return null;
