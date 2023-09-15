@@ -20,12 +20,25 @@ class CardStack {
     this.stack.push(card);
   }
 
-  draw() {
+  // In card.js
+  draw(cardType) {
+    console.log(
+      "Before draw:",
+      this.stack.map((card) => card.type)
+    );
     if (this.isEmpty()) {
       console.log("The card stack is empty.");
       return null;
     }
-    return this.stack.pop().type;
+    const index = this.stack.findIndex((card) => card.type === cardType);
+    if (index !== -1) {
+      return this.stack.splice(index, 1)[0].type;
+    }
+    console.log(
+      "After draw:",
+      this.stack.map((card) => card.type)
+    );
+    return null;
   }
 
   shuffle() {
@@ -53,6 +66,16 @@ class CardStack {
 
   peekRemainingCards() {
     return this.stack.map((card) => card.type);
+  }
+
+  // Move the top card to the bottom of the stack
+  moveToBottom() {
+    if (this.isEmpty()) {
+      console.log("The card stack is empty.");
+      return;
+    }
+    const topCard = this.stack.pop();
+    this.stack.unshift(topCard);
   }
 }
 
