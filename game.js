@@ -20,14 +20,13 @@ async function promptUser(question) {
 
 async function main() {
   const graph = new Graph(Graph.UNDIRECTED);
-  const nodes = ["A", "B", "C", "D", "E", "F"];
+  const nodes = ["A", "B", "C", "D", "E", "S"];
   nodes.forEach((node) => graph.addNode(node));
   graph.addEdge("A", "B");
   graph.addEdge("B", "C");
   graph.addEdge("C", "D");
   graph.addEdge("D", "E");
-  graph.addEdge("E", "F");
-  graph.addEdge("F", "A");
+  graph.addEdge("E", "S");
 
   const cardTypes = ["Dragon", "Goblin", "Princess"];
   graph.distributeCards(cardTypes);
@@ -51,18 +50,31 @@ async function main() {
   console.log("Card stack is instantiated...");
   cardStack.shuffle();
 
-  while (true) {
+  while (!cardStack.isEmpty()) {
+    // Changed the loop condition
     for (const player of players) {
       console.log(`${player.name}'s turn.`);
       await promptUser("Press Enter to roll the dice...");
       await player.rollDiceAndMove(graph, promptUser);
-      player.logDetails();
-      await player.guessHiddenCard(player.position, cardStack, promptUser);
-    }
 
-    const continueGame = await promptUser("Continue? (yes/no): ");
-    if (continueGame.toLowerCase() !== "yes") {
-      break;
+      if (graph.isSpecialNode(player.position)) {
+        await player.handleSpecialNode(graph, promptUser, cardStack);
+      }
+
+      // Check if the player is on a node with a hidden card
+      if (player.position.hiddenCard) {
+        await player.guessHiddenCard(player.position, cardStack, promptUser);
+      }
+
+      // Player info
+      player.logDetails();
+
+      // Check if the card stack is empty
+      if (cardStack.isEmpty() || graph.getHiddenNodes().length === 0) {
+        console.log("The game is over.");
+        rl.close();
+        return;
+      }
     }
   }
 
