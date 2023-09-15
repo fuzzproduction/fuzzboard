@@ -14,6 +14,10 @@ class Graph {
     this.edgeDirection = edgeDirection;
   }
 
+  isSpecialNode(node) {
+    return node.value === "S"; // Assuming 'CardPickedNode' is the value for the special node
+  }
+
   addNode(value) {
     if (!this.nodes.has(value)) {
       const newNode = new Node(value);
@@ -84,18 +88,32 @@ class Graph {
     if (specificNodes) {
       for (const [nodeValue, cardType] of Object.entries(specificNodes)) {
         const node = this.nodes.get(nodeValue);
-        if (node) {
+        if (node && node.value !== "S") {
+          // Exclude the special node "S"
           node.hiddenCard = { type: cardType };
         }
       }
     } else {
-      const nodeArray = Array.from(this.nodes.values());
-      for (const cardType of cardTypes) {
-        const randomIndex = Math.floor(Math.random() * nodeArray.length);
-        const node = nodeArray[randomIndex];
-        node.hiddenCard = { type: cardType };
+      const nodeArray = Array.from(this.nodes.values()).filter(
+        (node) => node.value !== "S"
+      ); // Exclude the special node "S"
+      const shuffledNodes = [...nodeArray].sort(() => 0.5 - Math.random());
+      for (let i = 0; i < cardTypes.length; i++) {
+        const node = shuffledNodes[i];
+        node.hiddenCard = { type: cardTypes[i] };
       }
     }
+  }
+
+  // In your Graph class
+  getHiddenNodes() {
+    const hiddenNodes = [];
+    for (const [_, node] of this.nodes) {
+      if (node.hiddenCard) {
+        hiddenNodes.push(node.value);
+      }
+    }
+    return hiddenNodes;
   }
 
   logDetails() {
